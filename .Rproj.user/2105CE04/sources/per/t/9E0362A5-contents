@@ -1,0 +1,127 @@
+---
+title: "Blog"
+author: "Matthew Whalen"
+date: "06/05/2021"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, warning = FALSE, message = FALSE)
+```
+I love movies and I love data. So, there's no surprise that one of my first big data projects I embarked on was so acquire an play with large amounts of movie data. This project went through many permutations -- what started as a a Shiny app where users could produce a movie and get a projected box office score, is now an autonomous* movie recommending Twitter Bot. 
+
+This was a fun side project in Data scraping, data analysis, machine learning, and automation, so I wanted to share some of the journey and code.
+
+*Autonomous: aka it runs as long as my desktop is powered on...
+
+The primary goal of this project was to build amovie recommendation system from scratch. I know plenty of people have analyzed the TMDb and MovieLens data sets, but I wanted to gather all my own data and build a recommendation system completely from scratch. So, while there are a lot of other (probably better) ways out there to do a lot of this, this is what I came up with. The project is broken into a few parts, each with their own designated scripts that can be found on [my Github page here](https://www.github.com). This project uses `R` for most of the data scraping and cleaning and `Python` for most of the machine learning stuff. I try to walk through most of the code, but if you need more details defintiely check out the repository which contains updated code. 
+
+
+# Part 1: Environment setup
+
+If you're following along at home, youll need these libraries (some of them are optional for parallelisation and performance increases)
+```{r}
+library(TMDb)
+library(dplyr)
+library(readr)
+library(tictoc)
+library(furrr) #for parallelisation
+library(parallel)
+parallel::detectCores(logical = TRUE) #determine total cores available
+future::plan(multisession(workers = 10)) #Can be adjusted based on machine. Can also be adjusted to just use however much CPU power is available. 
+
+select = dplyr::select
+`%notin%` = Negate(`%in%`)
+```
+
+I am setting up my system to be able to run some of the processes in parallel. My system is a 12-core multithreaded chip, so I am using 10 workers for the computations. There are only a few places where this is really necessary, but it boosts the data processing time significantly on my machine. 
+
+## TMDb Data
+
+The first step is getting as much data on a bunch of movies as possible. There is a great TMDb Kaggle dataset [here](), but this dataset only goes through 2016, whereas I wanted new movies! So, we're going to scrap data through the TMDb API, which is very easy to navigate and has high-level libraries in both `R` and `Python`. In `R` the [`TMDb`](/) library has a variety of functions to interact with the API, as long as you have an API key which can be obtained pretty easily. My API keys are in the file `scripts/keys.R`. It's good practice to keep your keys, passwords, and any other sensitive amterial in a seperate script. 
+
+We will be using the `TMDb::movie()` function to pull movie-level info. This function will generate a list entry for a single movie id. This means that we need to have a list of all the movie ids we want, then we can loop through the list of ids and pull data for each movie. There are two ways I can think off the top of my head to do this. (1) Just generate numbers from 1-999999. Then pass that to the `TMDb::movie()` functiona nd just generate data on ids that exist. (2) Scrape $n$ ids from the TMDb "Top Movies" page and just run those ids. I opted for option (2) here because I wanted to target popular/recent movies. This does come at a slight speed cost as it takes a minute or two to pull these ids, but I don't really care. So, we will use the `TMDb::discover_movie()` function which looks at TMDb's top movies. Each page contain 20 movie ids, so if we want 6000 total movies we just have to loop through the first 300 pages and save those ids. We shall call this function, `getTMDbIDs()`:
+
+```{r}
+getTMDbIDs = function(n = 6000, verbose = FALSE){
+  pages = seq(1,n/20, by = 1) #20 ids per page so n/20 = number of pages to look at
+  results = list() #by default results are returned as a list item so there is a need for a bit of housekeeping
+  for(i in 1:max(pages)){
+    results[[i]] = discover_movie(api_key, language = 'en', sort_by = 'vote_count.desc', page = i)$results$id 
+    if(verbose == TRUE){
+      print(i)
+    }
+  }
+  ids = unlist(results) #convert from list back to vector of ids
+  return(ids) #I think that last step could be optimzed but I wrote this way back when and don't care abotu fixing it. 
+}
+```
+
+```{r}
+ids = getTMDbIDs(n = 500)
+```
+
+In this chunk of code we are simpoly looping throuhg a specified number of pages and returning the id of the movie. This will ensure we are returning only the top $n$ most popular movies. 
+
+So, now that we have abunch of ids, we need to use these ids to get movie info for each one. I am using the `TMDb::movie()` function which returns a variety of details for a movie. You can also append other dataframes to the request using the `append_to_response` function. I am appending the `credits` and the `keywords` dataframes so that we can get the cast and crew as well as the predifined keywords for each movie. 
+
+### Pulling individual movie data
+
+So, we will slowly build up our function step by step. We'll start with our baseline API call
+
+```{r}
+movies = list()
+```
+
+Lets call our function to pull individual movie data `movieMaker`.
+
+```{r}
+movieMaker = function(id){
+  m = movie(api_key, id, append_to_response = c("credits, keywords"))
+  return(m)
+}
+```
+
+Let's see what this returns for the first ID in our list. 
+
+```{r}
+m = movieMaker(ids[1])
+
+str(m)
+```
+
+So we see each individual movie returns this fairly comprehensive list with some vectors, some dataframes. We will ultimately want to collapse these dataframes so that we can get each individual movie as a single row for a dataframe. 
+For exmaple, for the `genres` dataframe, we wnt to collapse the `names` column into a single vector. We can do that with the folowing code.
+
+```{r}
+movieMaker = function(id, departments){
+  m = movie(api_key, id, append_to_response = c("credits, keywords"))
+  df = m
+  df$genres = m$genres$name #collapse dataframe column down to a single vector.   
+  return(df)
+}
+m = movieMaker(ids[1])
+
+str(m[1:6])
+```
+
+So we see now `genres` has been collapsed down to a single vector. We will do this for all our desired columns. You can see this in the code below. 
+
+```{r}
+movieMaker = function(id, departments){
+  m = movie(api_key, id, append_to_response = c("credits, keywords"))
+  df = m
+  df$genres = m$genres$name      
+  df$production_companies = m$production_companies$name
+  df$production_countries = m$production_countries$name
+  df$belongs_to_collection = NULL
+  df$spoken_languages = m$spoken_languages$english_name
+  df$cast = m$credits$cast[m$credits$cast$order %in% sort(head(m$credits$cast$order, 6)),]$name
+  df$crew = m$credits$crew
+  df$credits = NULL
+  df$keywords = m$keywords$keywords$name
+  return(df)
+}
+
+m = movieMaker(ids[1])
+str(m)
+```

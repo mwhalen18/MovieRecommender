@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1619125262004.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2490928603",
+    "id" : "CCC76854",
+    "lastKnownWriteTime" : 1619125277,
+    "last_content_update" : 1619125277925,
+    "path" : "~/Dropbox (University of Michigan)/R Projects/MovieRecommender/scripts/similarity.R",
+    "project_path" : "scripts/similarity.R",
+    "properties" : {
+        "cursorPosition" : "10,69",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

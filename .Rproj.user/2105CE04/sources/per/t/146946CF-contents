@@ -1,0 +1,68 @@
+#!/usr/bin/env Rscript
+#cd 'box sync'/'box sync'/'python codes'/movie_rec_twitter
+#Twitter Bot
+library(twitteR)
+library(rvest)
+library(jpeg)
+library(rtweet)
+library(stringr)
+library(gridExtra)
+
+'%notin%' = Negate('%in%')
+
+
+PATH = getwd()
+SCRIPTS_PATH = file.path(PATH, 'scripts')
+KEYS_PATH = file.path(PATH, 'scripts/keys')
+DATA_PATH = file.path(PATH, 'data')
+
+
+source(file.path(KEYS_PATH, 'twitter_keys.R'))
+source(file.path(SCRIPTS_PATH, "stream_scrape_join.R"))
+#need both rtweet and twitteR
+#rtweet::create_token(consumer_key = api_key,
+#                     consumer_secret = api_secret,
+#                     access_token = access_token,
+#                     access_secret = access_secret)
+options(httr_oauth_cache = TRUE)
+setup_twitter_oauth(consumer_key = api_key,
+                    consumer_secret = api_secret,
+                    access_token = access_token,
+                    access_secret = access_secret)
+
+
+mentioners = rtweet::get_mentions() #again, need them both
+mention= mentions() #really, the only reason is why the fuck doesn rtweet give you the username of the tweeter?????? There's gotta be a way but I can't figure it out
+
+
+ids = pull(read.csv("files/replied_to_ids.txt", header = F, stringsAsFactors = F,numerals = "no.loss"))
+
+
+for(i in seq_along(mention)){ #loop along every element in the list of current mentions
+  failure = "We don't have that movie in our database...Check your spelling/special characters and try again."
+  if(mention[[i]]$getId() %notin% ids){ #only run this on tweet ids that we have not already responded to
+    handle = paste("@", mention[[i]]$getScreenName(),sep = "") #create a handle string for the individual we hope to reply to
+    id = mention[[i]]$getId() #pull out the id for the tweet id
+    ids = append(ids, id)
+    if(str_detect(mention[[i]]$text, "recommend")){ #if our string has our special call word
+      text = mention[[i]]$text #pull out the text of our mention to analyze
+      movie = sub(".*recommend ", "", text) #just get the movie title
+      df = join_results(movie) #run our function and assign it to a frame
+      if(df[1] == failure){
+        message = paste(handle, "Uh oh! It looks like we don't have that in our database. Check your spelling/punctuation and try again.")
+        post_tweet(status = message, in_reply_to_status_id = mentioners[i,]$status_id)
+      } else{
+        jpeg("temp.jpeg", height = 25*nrow(df), width = 350) #the next few lines just prepare R to store the table as a temprary JPEG
+        grid.table(df)
+        dev.off() #this line saves a temporary JPEG
+        message = paste(handle, "Here are my recommendations. Enjoy!")
+        rtweet::post_tweet(status = message, media = "temp.jpeg", in_reply_to_status_id = mentioners[i,]$status_id)
+      }
+    } else{
+      message = paste(handle, "Use the key word 'recommend' followed by the title of a movie to activate me.")
+      post_tweet(message, in_reply_to_status_id = mentioners[i,]$status_id)
+  }
+  }
+}
+
+write(ids, "files/replied_to_ids.txt")

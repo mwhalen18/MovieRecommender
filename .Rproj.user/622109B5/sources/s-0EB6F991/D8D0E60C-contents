@@ -1,0 +1,2 @@
+0 12 * * WED /usr/lib/R/Rscript "/home/mwhalen18/Dropbox (University of Michigan)/R Projects/MovieRecommender/scraping.R"
+0 12 * * WED /usr/lib/R/Rscript "/home/mwhalen18/Dropbox (University of Michigan)/R Projects/MovieRecommender/scraping.R"

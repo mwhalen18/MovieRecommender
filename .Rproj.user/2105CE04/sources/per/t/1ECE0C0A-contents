@@ -1,0 +1,34 @@
+PATH = getwd()
+SCRIPTS_PATH = file.path(PATH, 'scripts')
+KEYS_PATH = file.path(PATH, 'scripts/keys')
+DATA_PATH = file.path(PATH, 'data')
+
+
+source(file.path(SCRIPTS_PATH, 'similarity.R'))
+
+streaming = read.csv('data/streaming.csv', stringsAsFactors = F) %>% mutate(Netflix = ifelse(is.na(Netflix), "", Netflix),
+                                                                            hulu = ifelse(is.na(hulu), "", hulu),
+                                                                            amazon = ifelse(is.na(amazon), "", amazon),
+                                                                            disney = ifelse(is.na(disney), "", disney),
+                                                                            hbo = ifelse(is.na(hbo), "", hbo),
+                                                                            apple = ifelse(is.na(apple), "", apple),
+                                                                            criterion = ifelse(is.na(criterion), "", criterion),
+                                                                            services = paste0(Netflix, " ", hulu, " ", amazon, " ", disney, " ", hbo, " ", apple, " ", criterion)) %>%
+  select(Title, services)
+
+gimme_something_to_watch = function(movie){
+  if(movie %in% titles){
+    return(attr(head(sort(m[movie,], decreasing = T),20), "names"))
+  } else{
+    return("We don't have that movie in our database...Check your spelling/special characters and try again.")
+  }
+}
+
+
+join_results = function(movie){
+  t = gimme_something_to_watch(movie) %>% as.data.frame()
+  t = as.data.frame(t[-1,])
+  colnames(t) = "Title"
+  rownames(t) = NULL
+  return(left_join(t,streaming) %>% mutate(services = ifelse(is.na(services), " ", services)))
+}

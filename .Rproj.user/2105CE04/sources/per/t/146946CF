@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1619124528381.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4143450656",
+    "id" : "146946CF",
+    "lastKnownWriteTime" : 1619125219,
+    "last_content_update" : 1619125219775,
+    "path" : "~/Dropbox (University of Michigan)/R Projects/MovieRecommender/scripts/Bot.R",
+    "project_path" : "scripts/Bot.R",
+    "properties" : {
+        "cursorPosition" : "21,0",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

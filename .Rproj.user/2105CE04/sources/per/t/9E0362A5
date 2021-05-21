@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1620582663712.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2365082633",
+    "id" : "9E0362A5",
+    "lastKnownWriteTime" : 1620613420,
+    "last_content_update" : 1620613420660,
+    "path" : "~/Dropbox (University of Michigan)/R Projects/MovieRecommender/Blogger/blog.Rmd",
+    "project_path" : "Blogger/blog.Rmd",
+    "properties" : {
+        "cursorPosition" : "125,5",
+        "last_setup_crc32" : "",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

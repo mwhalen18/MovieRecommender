@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1619125092804.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "30362917",
+    "id" : "5DFF0FF8",
+    "lastKnownWriteTime" : 1620584286,
+    "last_content_update" : 1620584286389,
+    "path" : "~/Dropbox (University of Michigan)/R Projects/MovieRecommender/scripts/scraping.R",
+    "project_path" : "scripts/scraping.R",
+    "properties" : {
+        "cursorPosition" : "12,0",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

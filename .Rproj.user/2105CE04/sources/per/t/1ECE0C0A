@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1619125212392.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2338265596",
+    "id" : "1ECE0C0A",
+    "lastKnownWriteTime" : 1619125217,
+    "last_content_update" : 1619125217190,
+    "path" : "~/Dropbox (University of Michigan)/R Projects/MovieRecommender/scripts/stream_scrape_join.R",
+    "project_path" : "scripts/stream_scrape_join.R",
+    "properties" : {
+        "cursorPosition" : "7,0",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
